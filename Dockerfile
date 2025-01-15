@@ -1,7 +1,8 @@
-# Use an official Python base image
+
+# Start from the Python base image
 FROM python:3.11-slim
 
-# Install necessary dependencies including the CS50 library for C
+# Install any system dependencies (e.g., cs50 library for C)
 RUN apt-get update && apt-get install -y \
     gcc \
     make \
@@ -9,27 +10,20 @@ RUN apt-get update && apt-get install -y \
     libcs50-dev \
     && apt-get clean
 
-# Install Python dependencies
+# Set the working directory
+WORKDIR /app
+
+# Copy the requirements.txt (this ensures Docker uses cache unless requirements change)
 COPY requirements.txt .
+
+# Install dependencies (including Gunicorn and other Python libraries)
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy your application code
+# Copy your application files
 COPY . .
 
-# Copy requirements.txt first (so Docker can cache this layer)
-COPY requirements.txt .
-
-# Install Python dependencies (this installs gunicorn too)
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Ensure the C binary is executable
-RUN chmod +x ./c_program/my_binary
-
-# Expose port 5000 for the Flask app
+# Expose the Flask port
 EXPOSE 5000
 
-# Set the environment variable for Flask
-ENV FLASK_APP=app.py
-
-# Command to start Flask using Gunicorn for better performance in production
+# Command to run Gunicorn (to serve your Flask app in production)
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]

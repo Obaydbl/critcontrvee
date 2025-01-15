@@ -1,0 +1,442 @@
+{% extends "layout.html" %}
+{% block title %}Post office{% endblock %}
+{% block head %}
+    <link href="/static/login.css" rel="stylesheet">
+{% endblock %}
+{% block bg %}poffice.webp{% endblock %}
+
+{% block body %}
+    <!-- Existing loading overlay -->
+    <div class="overlay" id="attachment-overlay" style="background-color: rgba(0,0,0,0.6); display: none; z-index: 6;">
+        <div class="wrapper" id="attachment-wrapper" style='height: 80%; overflow: auto; background-color: rgba(14, 3, 5, 0.6);'>
+            <h2 id="level-title" class="candle">Case 1</h2>
+            <div id="attachment-container" class="messages" style="rgba(14, 3, 5, 0.9); display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; position: relative; margin-bottom: 20%;">
+                <!-- Items will be dynamically added here -->
+            </div>
+            <div class="inbox-nav" style="position: relative;">
+                <button id="prev-level" class="normalbutton" disabled>Previous</button>
+                <button id="next-level" class="normalbutton">Next</button>
+                <button id="confirm-attachment" class="wood candle">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading_overlay" class="overlay" style="z-index: 999; background-color: rgba(0,0,0,0.95); display: flex; justify-content: center; align-items: center; position: fixed; flex-direction: column; transition: opacity 0.7s ease; opacity: 1;">
+        <div class="spinner-border candle" role="status">
+            <span class="sr-only"></span>
+        </div>
+        <p class="candle">Loading...</p>
+    </div>
+    <div class="inbox-nav">
+        <button id="editmessage" class="wood candle">Edit Message</button>
+        <button id="toggle-inbox" class="wood candle">Inbox</button>
+        <button id="editaddress" class="wood candle">Edit Address</button>
+    </div>
+
+    <div class="overlay" id="inbox-overlay" style="background-color: rgba(0,0,0,0.86); padding-top: 10%; padding-left: 5%; padding-right: 5%; z-index: 3; display: none;">
+        <div id="inbox-container" class="wrapper" style="background-color: rgba(14, 3, 5, 0.8)">
+            <button type="button" class="btn-close btn-close-white" id="close_inbox" style="position: fixed;  top: 3%; left: 5%; translateX(5%); translatey(3%);"></button>
+            <h2>Inbox</h2>
+            <div id="message-container" style="color: #473C30;">
+                <p><strong>Sender Name:</strong> <span id="sender-name"></span></p>
+                <p><strong>Sender Address:</strong> <span id="sender-address"></span></p>
+                <p><strong>City & Zip:</strong> <span id="sender-city-zip"></span></p>
+                <p><strong>Country:</strong> <span id="sender-country"></span></p>
+                <p><strong>Receive Time:</strong> <span id="receive-time"></span></p>
+                <div class="input-field">
+                    <label for="message-text">Message:</label>
+                    <textarea id="message-text" rows="6" style=" color: #473C30;" disabled></textarea>
+                </div>
+            </div>
+            <!-- Navigation Buttons in Inbox -->
+            <div class="inbox-nav">
+                <button id="prev-message" class="wood candle">Previous</button>
+                <button id="next-message" class="wood candle">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Script -->
+    <script>
+        const address_book = JSON.parse({{address_book | tojson | safe}});
+        const attachmentOverlay = document.getElementById('attachment-overlay');
+        let letter = `{{ letter }}`;
+        let envelopeURL = "";
+
+        window.onload = () => {
+            const loading_overlay = document.getElementById('loading_overlay');
+            function all_loaded() {
+                return !!envelopeURL;
+            }
+            function removeLoadingOverlay() {
+                if (all_loaded()) {
+                    loading_overlay.style.opacity = "0";
+                    loading_overlay.addEventListener('transitionend', () => {
+                        loading_overlay.remove();
+                    });
+                }
+            }
+            setInterval(removeLoadingOverlay, 250);
+        };
+
+
+        caches.open('envelopes').then(cache => {
+                cache.match(`/makeEnv/{{ session['user_id'] }}/envOwn`).then(cachedImage => {
+                    if (cachedImage) {
+                        fetch(`/q/{{ session['user_id'] }}/envOwn`)
+                        .then(response => {
+                            if (response.status === 304) {
+                                return cachedImage.blob()
+                            }
+                            else {
+                                fetch(`/makeEnv/{{ session['user_id'] }}/envOwn`)
+                                .then(response => {
+                                cache.put(`/makeEnv/{{ session['user_id'] }}/envOwn`, response.clone());
+                                return response.blob()})
+                                .then(image => {
+                                envelopeURL = URL.createObjectURL(image);
+                                console.log('Resource modified, Image Blob created:', envelopeURL);
+                                }).catch(error => console.error('Fetch error 2:', error));
+                            }
+                        }).then( cachedImage => {
+                            if (cachedImage) {
+                                envelopeURL = URL.createObjectURL(cachedImage);
+                                console.log('Using cached for envOwn', envelopeURL);
+                            }
+                        });
+                    }
+                    else {
+                        fetch(`/makeEnv/{{ session['user_id'] }}/envOwn`)
+                        .then(response => {
+                        cache.put(`/makeEnv/{{ session['user_id'] }}/envOwn`, response.clone());
+                        console.log('Cache populated for:', `/makeEnv/{{ session['user_id'] }}/envOwn`);
+                        cache.match('/makeEnv/{{ session['user_id'] }}/envOwn').then(cachedImage => {
+                        console.log('Cache match result:', cachedImage);
+                        });
+                        return response.blob()})
+                        .then(image => {
+                        envelopeURL = URL.createObjectURL(image);
+                        console.log('Cache doesnt exist, Image Blob created:', envelopeURL);
+                        }).catch(error => console.error('Fetch error 2:', error));
+                    }
+                })
+        });
+
+        let body = document.querySelector("body");
+        document.getElementById("editaddress").addEventListener('click', function(a) {
+            let saveoverlay = document.createElement("div");
+            saveoverlay.innerHTML += `
+                    <div class="overlay" id="saveoverlay" style="background-color: rgba(0,0,0,0.86); padding-top: 10%; padding-left: 5%; padding-right: 5%; z-index: 3;">
+                <div class="wrapper" style="height: 80%; overflow: auto; background-color: rgba(14, 3, 5, 0.5)">
+                    <button type="button" class="btn-close btn-close-white" id="closeedit" style="position: fixed;  top: 3%; left: 5%; translateX(5%); translatey(3%);"></button>
+                    <form style="margin-top: 10%; margin-bottom: 5%;" id="addressform" autocomplete="off" method="post" action="/submit_address">
+                        <h2>Sender:</h2>
+                        <div class="input-field">
+                    <input disabled autocomplete="off" type="text" value="{{username}}">
+                    <label>Name</label>
+                </div>
+                <div class="input-field">
+                    <input disabled autocomplete="off" type="text" value="{{address['street']}}">
+                    <label>Address</label>
+                </div>
+                <div style=" display: flex; gap: 10px;">
+                    <div class="input-field">
+                        <input disabled autocomplete="off" type="text" value="{{address['city']}}">
+                        <label>City</label>
+                    </div>
+                    <div class="input-field">
+                        <input disabled autocomplete="off" type="text" value="{{address['zip']}}">
+                        <label>Zip code</label>
+                    </div>
+                </div>
+
+                <div class="input-field">
+                    <input disabled autocomplete="off" type="text" value="{{address['country']}}">
+                    <label>Country</label>
+                </div>
+
+                <h2>Recipient:</h2>
+                <div class="input-field">
+                    <input required autocomplete="off" autofocus name="NOTname" type="text">
+                    <label>Name</label>
+                </div>
+                <div class="input-field">
+                    <input required autocomplete="off" autofocus name="NOTstreet" type="text">
+                    <label>Address</label>
+                </div>
+                <div style=" display: flex; gap: 10px;">
+                    <div class="input-field">
+                        <input required autocomplete="off" autofocus name="NOTcity" type="text">
+                        <label>City</label>
+                    </div>
+                    <div class="input-field">
+                        <input required autocomplete="off" autofocus name="NOTzip" type="number">
+                        <label>Zip code</label>
+                    </div>
+                </div>
+
+                <div class="input-field">
+                    <input required autocomplete="off" autofocus name="NOTcountry" type="text">
+                    <label>Country</label>
+                </div>
+                <button id="saveaddress" type="button">Save</button>
+            </form>
+        </div>`;
+        body.appendChild(saveoverlay);
+        document.getElementById("closeedit").addEventListener('click', function (a) {
+            saveoverlay.remove();
+        });
+        let form = document.getElementById("addressform");
+            document.getElementById("saveaddress").addEventListener("click", function(b) {
+                if (form.checkValidity()) {
+                    let submitoverlay = document.createElement("div");
+                    submitoverlay.innerHTML = `
+                    <div class="overlay" id="submitoverlay" style="background-color: rgba(0, 0, 0, 0.8); padding-top: 20%; padding-left: 5%; padding-right: 5%; padding-bottom: 20%; z-index: 5;">
+                        <div class="wood candle bg-gradient popup">
+                            <h5>Are you sure you want to save the recipient address? You cannot edit this later!</h5>
+                            <div style="display: flex; justify-content: space-between; padding: 0 40px;">
+                                <button id="cancelsave">Cancel</button>
+                                <button id="submitaddress">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                    document.body.appendChild(submitoverlay);
+                    document.getElementById("cancelsave").addEventListener("click", function(c) {
+                        submitoverlay.remove();
+                    });
+
+                    document.getElementById("submitaddress").addEventListener("click", function(c) {
+                        form.submit();
+                    });
+                } else {
+                    form.reportValidity();
+                }
+            });
+
+        });
+
+        document.querySelector("#editmessage").addEventListener("click", function(a) {
+            let envelope_overlay = document.createElement("div");
+            envelope_overlay.className="overlay";
+            envelope_overlay.style="z-index:3; background-color: rgba(0,0,0,0.86);"
+            envelope_overlay.innerHTML =  `
+                <div id="env_div" style="width: 100%; max-width: 600px; height: auto; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                    <img style="width: 100%; height: auto;" src="${envelopeURL}">
+                </div>
+            `;
+            body.appendChild(envelope_overlay);
+            document.getElementById("env_div").addEventListener("click", function(ed){
+                envelope_overlay.innerHTML=`
+                    <div id="paper_div" style="height: 80vh; width:auto; max-width: 95vw; top:50%; left:50%; transform: translate(-50%, -55%); position: fixed;">
+                        <img src="/static/cleanpaper.png" style="height: 80vh; width:auto; max-width: 95vw;">
+                    </div>
+                    <div class="chat-container">
+                        <textarea id="paper_textarea" class="styled-textarea" maxlength="250" placeholder="Type your letter here..."></textarea>
+                        <button id="open_attachment">Add attachment</button>
+                        <button id="save_letter">Save</button>
+                    </div>
+                `;
+
+                let text_div = document.createElement('div');
+                text_div.className="letter_text_div";
+                text_div.innerHTML=`<p id="paper_text"></p>`;
+                document.getElementById("paper_div").appendChild(text_div);
+                paper_text = document.getElementById('paper_text');
+                paper_textarea = document.getElementById('paper_textarea');
+                paper_text.textContent = letter;
+                paper_textarea.value = letter;
+                paper_textarea.focus();
+                paper_textarea.setSelectionRange(paper_textarea.value.length, paper_textarea.value.length);
+                paper_textarea.blur();
+                document.getElementById('open_attachment').addEventListener('click', () => {
+                    attachmentOverlay.style.display = 'block';
+                });
+                document.getElementById('save_letter').addEventListener('click', function(){
+                    letter = paper_textarea.value;
+                    fetch('/poffice', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({letter: letter, attachments: totalSelectedIds})
+                    }).catch(error => console.error('Failed to save letter:', error));
+                    envelope_overlay.remove();
+                });
+                setInterval(function(){
+                    paper_text.textContent = paper_textarea.value;
+                }, 100);
+            });
+        });
+
+        document.getElementById("fullscreen").addEventListener('click', function() {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+            else{
+                document.documentElement.requestFullscreen();
+            }
+        });
+        // Existing Edit Address functionality remains untouched...
+
+        // Existing Edit Message functionality remains untouched...
+        let currentLevel = {{ level }};
+
+        // Example structure for attachments (replace this with your data)
+        let attachments = JSON.parse({{items | tojson | safe}});
+        let totalSelectedIds = JSON.parse({{attachments | tojson | safe}});
+
+        function renderLevel(level) {
+            const attachmentsContainer = document.getElementById('attachment-container');
+
+
+            attachmentsContainer.innerHTML = ''; // Clear previous content
+            const levelTitle = document.getElementById('level-title');
+            levelTitle.textContent = `Case ${level}`;
+
+            const items = attachments[level];
+            if (!items) return;
+
+            items.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'envelope';
+                itemDiv.style = "cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 10px;";
+
+                const img = document.createElement('img');
+                img.src = item.content;
+                img.alt = item.name;
+                img.style = "width: 50px; height: 50px; object-fit: cover;";
+
+                const labelCheckboxContainer = document.createElement('div');
+                labelCheckboxContainer.style = "display: flex; align-items: center; gap: 5px;";
+
+                const label = document.createElement('span');
+                label.textContent = item.name;
+                label.className = 'normaltxt';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'normal-button';
+                checkbox.dataset.id = item.id;
+                if (totalSelectedIds.indexOf(String(item.id)) != -1) {
+                    checkbox.checked = true;
+                }
+
+                labelCheckboxContainer.appendChild(label);
+                labelCheckboxContainer.appendChild(checkbox);
+
+
+                itemDiv.appendChild(img);
+                itemDiv.appendChild(labelCheckboxContainer);
+                attachmentsContainer.appendChild(itemDiv);
+            });
+
+            // Update buttons
+            document.getElementById('prev-level').disabled = level === 1;
+            document.getElementById('next-level').disabled = level === Object.keys(attachments).length;
+        }
+
+        // Event listeners for navigation
+        document.getElementById('prev-level').addEventListener('click', () => {
+            if (currentLevel > 1) {
+                currentLevel--;
+                getSelectedIds();
+                renderLevel(currentLevel);
+            }
+        });
+
+        document.getElementById('next-level').addEventListener('click', () => {
+            if (currentLevel < Object.keys(attachments).length) {
+                currentLevel++;
+                getSelectedIds();
+                renderLevel(currentLevel);
+            }
+        });
+        document.getElementById('confirm-attachment').addEventListener('click', () => {
+            attachmentOverlay.style.display='none';
+            getSelectedIds();
+        });
+
+        function getSelectedIds() {
+            const checkboxes = document.querySelectorAll('#attachment-container input[type="checkbox"]');
+            const selectedIds = [];
+            const unselectedIds = [];
+            checkboxes.forEach((checkbox) => {
+                if (checkbox.checked) {
+                    selectedIds.push(checkbox.dataset.id);
+                }
+                else {
+                    unselectedIds.push(checkbox.dataset.id);
+                }
+            });
+            for (let id of selectedIds) {
+                let idIndex = totalSelectedIds.indexOf(id);
+                if (idIndex == -1) {
+                    totalSelectedIds.push(id);
+                }
+            }
+
+            for (let id of unselectedIds) {
+                let idIndex = totalSelectedIds.indexOf(id);
+                if (idIndex != -1) {
+                    totalSelectedIds.pop(idIndex);
+                }
+            }
+            console.log(totalSelectedIds);
+            return;
+        }
+
+
+        renderLevel(currentLevel);
+
+        const inbox = JSON.parse({{ inbox | tojson | safe }});
+        let currentMessageIndex = inbox.length - 1;
+
+        const inboxOverlay = document.getElementById('inbox-overlay');
+        const inboxContainer = document.getElementById('inbox-container');
+        const toggleInboxButton = document.getElementById('toggle-inbox');
+        const inboxClose = document.getElementById('close_inbox');
+        function toggleInbox() {
+            const isVisible = inboxOverlay.style.display === "block";
+            if (isVisible) {
+                inboxOverlay.style.display = "none";
+            } else {
+                inboxOverlay.style.display = "block";
+                displayMessage(currentMessageIndex);
+            }
+        }
+
+        function displayMessage(index) {
+            const message = inbox[index];
+            if (!message) return;
+
+            document.getElementById('sender-name').textContent = message.name;
+            document.getElementById('sender-address').textContent = message.address;
+            document.getElementById('sender-city-zip').textContent = `${message.city}, ${message.zipcode}`;
+            document.getElementById('sender-country').textContent = message.country;
+            document.getElementById('receive-time').textContent = message.time;
+            document.getElementById('message-text').value = message.message;
+
+            document.getElementById('prev-message').disabled = index === 0;
+            document.getElementById('next-message').disabled = index === allMessages.length - 1;
+        }
+
+        document.getElementById('prev-message').addEventListener('click', () => {
+            if (currentMessageIndex > 0) {
+                currentMessageIndex--;
+                displayMessage(currentMessageIndex);
+            }
+        });
+
+        document.getElementById('next-message').addEventListener('click', () => {
+            if (currentMessageIndex < allMessages.length - 1) {
+                currentMessageIndex++;
+                displayMessage(currentMessageIndex);
+            }
+        });
+
+        toggleInboxButton.addEventListener('click', toggleInbox);
+        inboxOverlay.addEventListener('click', (event) => { if (event.target === inboxOverlay || event.target === inboxClose) { toggleInbox();}
+});
+    </script>
+{% endblock %}

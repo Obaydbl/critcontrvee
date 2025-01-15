@@ -1,0 +1,543 @@
+{% extends "layout.html" %}
+{% block title %}Document{% endblock %}
+{% block bg %}main.webp{% endblock %}
+{% block body %}
+    <div id="loading_overlay" class="overlay" style="z-index: 999; background-color: rgba(0,0,0,0.96); display: flex; justify-content: center; align-items: center; position: fixed;  flex-direction: column; transition: opacity 0.7s ease; opacity: 1;">
+        <div class="spinner-border candle" role="status">
+            <span class="sr-only"></span>
+        </div>
+        <p class="candle">Loading...</p>
+    </div>
+
+    <div class="inbox-nav">
+        <button id="open_document" class="wood candle">Open document</button>
+        <button id="open_chat" class="wood candle">Open chat</button>
+        <button id="open_inventory" class="wood candle">Open address book</button>
+    </div>
+
+    <div class="overlay" style="z-index:3; display: none;  background-color: rgba(0,0,0,0.86);" id="document_overlay">
+        <button type="button" class="btn-close btn-close-white" id="close_document" style="position: fixed;  top: 3%; left: 5%; translateX(5%); translatey(3%);"></button>
+        <div class="doc container-fluid">
+            <img src="" style="height:100%; width:100%;" id="document">
+            <div class="inbox-nav">
+                <button id="lp" class="wood candle">Open note</button>
+                <button id="rp" class="wood candle">Open case content</button>
+            </div>
+            <button id="np" style="height: 40px; width: 40px; position:absolute; right:0; bottom:50%; display:none; z-index: 3; background: url('/static/right.png') no-repeat center center; background-size: contain; border: none; padding: 0;"></button>
+            <button id="pp" style="height: 40px; width: 40px; position:absolute; left:0; bottom:50%; display:none; z-index: 3; background: url('/static/left.png') no-repeat center center; background-size: contain; border: none; padding: 0;"></button>
+        </div>
+    </div>
+    <div class="overlay" style="z-index:3; display: none; background-color: rgba(0,0,0,0.86);" id="chat_overlay">
+        <button type="button" class="btn-close btn-close-white" id="close_chat" style="position: fixed;  top: 3%; left: 5%; translateX(5%); translatey(3%);"></button>
+        <div class="chat">
+            <div class="messages">
+                {% if messages %}
+                    {% for message in messages %}
+                        <span class="message-span">
+                            <p>{{message['username']}}:</p>
+                            <p>{{message['message']}}</p>
+                        </span>
+                        <br>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <img src="/static/notebook.png">
+        </div>
+
+        <div class="chat-container" style='z-index: 5;'>
+            <textarea id="message_area" class="styled-textarea" maxlength="500" placeholder="Type your message here..."></textarea>
+            <button id="send_message" class="normal-button wood candle">Send</button>
+        </div>
+    </div>
+    <div class="overlay" id="inventory_overlay" style="background-color: rgba(0,0,0,0.86); padding-top: 10%; padding-left: 3%; padding-right: 3%; z-index: 3; display: none;">
+        <button type="button" class="btn-close btn-close-white" id="close_inventory" style="position: fixed;  top: 3%; left: 5%; translateX(5%); translatey(3%);"></button>
+        <div class="wrapper" id="address_wrapper" style="height: 87%; overflow: auto; background-color: rgba(14, 3, 5, 0.5); display: flex; flex-direction: column;">
+
+        </div>
+
+        <div class="inbox-nav">
+            <button id="prev_page" class="wood candle" style="display: none;">Previous</button>
+            <button id="next_page" class="wood candle">Next</button>
+        </div>
+    </div>
+    <script>
+        let items = JSON.parse({{items | tojson | safe}});
+        console.log("Items object:", items);
+
+        let level = {{level}};
+        const texts = JSON.parse({{texts | tojson | safe}});
+        let loadedStatus = {};
+        for (let i = 1; i <= level; i++) {
+            const key = String(i); // Convert numeric index to string
+            if (items[key]) {
+                loadedStatus[key] = {
+                    document: false,
+                    others: []
+                };
+
+                if (items[key]['others']) {
+                    console.log(`Level ${key} - Others Length:`, items[key]['others'].length);
+                    loadedStatus[key]['others'] = new Array(items[key]['others'].length).fill(false);
+                }
+            }
+        }
+
+        console.log("Loaded status initialized:", loadedStatus);
+
+        let minpage = 1;
+        let maxpage = {{level}};
+        let documents = [];
+        let letters = [];
+        let envelopes = [];
+        let envurl = "";
+        window.onload = () => {
+            const loading_overlay = document.getElementById('loading_overlay');
+
+            function all_loaded() {
+                for (i = 1; i <= maxpage; i += 1) {
+                    if (loadedStatus[i]) {
+                        if (!loadedStatus[i]['document']) {
+                            return false;
+                        }
+                        if (loadedStatus[i]['others']) {
+                            for (j = 0; j < loadedStatus[i]['others'].length; j++) {
+                                if (!loadedStatus[i]['others'][j]) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+                return true;
+            }
+
+            function removeLoadingOverlay() {
+                if (all_loaded()) {
+                    clearInterval(RemoveLoadingOverlayInterval);
+                    loading_overlay.style.opacity = "0";
+                    loading_overlay.addEventListener('transitionend', () => {
+                        loading_overlay.remove();
+                    });
+                    document.getElementById('document').src = items[level]['document'];
+                }
+            }
+            RemoveLoadingOverlayInterval = setInterval(removeLoadingOverlay, 250);
+        }
+        let open_document = document.getElementById('open_document');
+        let open_chat = document.getElementById('open_chat');
+        let open_inventory = document.getElementById('open_inventory');
+
+        let close_document = document.getElementById('close_document');
+        let close_chat = document.getElementById('close_chat');
+        let close_inventory = document.getElementById('close_inventory');
+
+        let document_overlay = document.getElementById('document_overlay');
+        let chat_overlay = document.getElementById('chat_overlay');
+        let inventory_overlay = document.getElementById('inventory_overlay');
+
+
+
+    /**chat javascript**/
+
+        let messagebox = document.querySelector('.messages');
+        let last_id = {{last_id | tojson}};
+        messagebox.scrollTop = messagebox.scrollHeight;
+
+        function messageQuery(message, id) {
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    last_id: last_id
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length !== 0) {
+                        last_id = data[data.length - 1]['id'];
+                        let appendhtml = '';
+                        for (let message1 of data) {
+                            appendhtml += `
+                        <span class="message-span">
+                            <p>${message1['username']}:</p>
+                            <p>${message1['message']}</p>
+                        </span>
+                        <br>`;
+                        }
+                        let bottom = false;
+                        if (messagebox.scrollTop + messagebox.clientHeight >= messagebox.scrollHeight) {
+                            bottom = true;
+                        }
+                        messagebox.insertAdjacentHTML('beforeend', appendhtml);
+                        if (bottom) {
+                            messagebox.scrollTop = messagebox.scrollHeight;
+                        }
+                        console.log(data);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        document.getElementById('send_message').addEventListener('click', a => {
+            let message = document.getElementById('message_area').value.trim();
+            messageQuery(message, last_id);
+            document.getElementById('message_area').value = '';
+        });
+
+    /**document javascript**/
+
+        console.log("Starting to process items...");
+
+        try {
+            caches.open('static-items').then(cache => {
+                console.log("Cache opened successfully.");
+
+                for (let i = 1; i <= level; i++) {
+                    console.log(`Processing level ${i}...`);
+
+                    if (items[i]) {
+                        console.log(`Found items for level ${i}:`, items[i]);
+
+                    // Handle the document
+                        if (items[i]['document']) {
+                            console.log(`Found document for level ${i}:`, items[i]['document']);
+
+                            cache.match(items[i]['document']).then(cachedResponse => {
+                                if (cachedResponse) {
+                                    console.log(`Document is cached for level ${i}.`);
+
+                                    cachedResponse.blob().then(blob => {
+                                        console.log(`Blob created for cached document for level ${i}.`);
+                                        items[i]['document'] = URL.createObjectURL(blob);
+                                        loadedStatus[i]['document'] = true;
+                                        console.log(`Using cached document for level ${i}:`, items[i]['document']);
+                                    }).catch(error => console.error(`Error creating blob for cached document at level ${i}:`, error));
+                                } else {
+                                    console.log(`Document not cached for level ${i}, fetching...`);
+
+                                    fetch(items[i]['document'])
+                                        .then(response => {
+                                            console.log(`Document fetched for level ${i}.`);
+                                            return response.blob();
+                                        })
+                                        .then(blob => {
+                                            console.log(`Blob created for fetched document for level ${i}.`);
+                                            cache.put(items[i]['document'], new Response(blob));
+                                            console.log(`Document cached for level ${i}:`, items[i]['document']);
+                                            items[i]['document'] = URL.createObjectURL(blob);
+                                            loadedStatus[i]['document'] = true;
+                                        })
+                                        .catch(error => console.error(`Failed to fetch or process document for level ${i}:`, error));
+                                }
+                            }).catch(error => console.error(`Error matching cache for document at level ${i}:`, error));
+                        } else {
+                            console.log(`No document found for level ${i}.`);
+                        }
+
+                    // Handle other items
+                        if (items[i]['others']) {
+                            console.log(`Processing 'others' for level ${i}:`, items[i]['others']);
+
+                            items[i]['others'].forEach((other, index) => {
+                                console.log(`Processing ${other['type']} at index ${index} for level ${i}.`);
+
+                                if (other['content']) {
+                                    console.log(`Found content for ${other['type']} at index ${index}:`, other['content']);
+
+                                    cache.match(other['content']).then(cachedResponse => {
+                                        if (cachedResponse) {
+                                            console.log(`Content is cached for ${other['type']} at index ${index} for level ${i}.`);
+
+                                            cachedResponse.blob().then(blob => {
+                                                console.log(`Blob created for cached ${other['type']} at index ${index} for level ${i}.`);
+                                                items[i]['others'][index]['content'] = URL.createObjectURL(blob);
+                                                loadedStatus[i]['others'][index] = true;
+                                                console.log(`Using cached ${other['type']} for level ${i} at index ${index}:`, items[i]['others'][index]['content']);
+                                            }).catch(error => console.error(`Error creating blob for cached ${other['type']} at index ${index} for level ${i}:`, error));
+                                        } else {
+                                            console.log(`Content not cached for ${other['type']} at index ${index}, fetching...`);
+
+                                            fetch(other['content'])
+                                                .then(response => {
+                                                    console.log(`${other['type']} fetched for level ${i} at index ${index}.`);
+                                                    return response.blob();
+                                                })
+                                                .then(blob => {
+                                                    console.log(`Blob created for fetched ${other['type']} at index ${index} for level ${i}.`);
+                                                    cache.put(other['content'], new Response(blob));
+                                                    console.log(`${other['type']} cached for level ${i} at index ${index}:`, items[i]['others'][index]['content']);
+                                                    items[i]['others'][index]['content'] = URL.createObjectURL(blob);
+                                                    loadedStatus[i]['others'][index] = true;
+                                                })
+                                                .catch(error => console.error(`Failed to fetch or process ${other['type']} for level ${i} at index ${index}:`, error));
+                                        }
+                                    }).catch(error => console.error(`Error matching cache for ${other['type']} at index ${index} for level ${i}:`, error));
+                                } else {
+                                    console.log(`No content found for ${other['type']} at index ${index} for level ${i}.`);
+                                }
+                            });
+                        } else {
+                            console.log(`No 'others' found for level ${i}.`);
+                        }
+                    } else {
+                        console.log(`No items found for level ${i}.`);
+                    }
+                }
+            }).catch(error => console.error("Error opening cache:", error));
+        } catch (error) {
+            console.error("Unexpected error occurred:", error);
+        }
+
+
+        let page = maxpage;
+        if (maxpage != minpage) {
+            document.querySelector("#pp").style.display = "block";
+        }
+
+        document.querySelector('.doc').querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                switch (e.target.id) {
+                    case 'np':
+                    case 'pp':
+                        if (e.target.id === 'np') {
+                            page += 1;
+                        } else if (e.target.id === 'pp') {
+                            page -= 1;
+                        }
+                        e.target.parentElement.querySelector('#document').src = items[String(page)]['document'];
+                        if (page == minpage) {
+                            document.querySelector("#pp").style.display = "none";
+                            document.querySelector("#np").style.display = "block";
+                        } else if (page == maxpage) {
+                            document.querySelector("#pp").style.display = "block";
+                            document.querySelector("#np").style.display = "none";
+                        } else {
+                            document.querySelector("#pp").style.display = "block";
+                            document.querySelector("#np").style.display = "block";
+                        }
+                        break;
+                    case 'lp':
+                        let note_overlay = document.createElement('div');
+                        note_overlay.className = "overlay";
+                        note_overlay.style.zIndex = "4";
+                        note_overlay.id = "note_overlay";
+                        note_overlay.innerHTML = `
+                            <div id="paper_div" style="height: 70vh; width:45vh; top:50%; left:50%; transform: translate(-50%, -55%); position: fixed;">
+                                <img src="/static/notepaper.jpeg" style="width: 100%;height: 100%;">
+                            </div>
+
+                            <div class="chat-container">
+                                <textarea id="paper_textarea" class="styled-textarea" maxlength="250" placeholder="Type your letter here..."></textarea>
+                                <button id="save_letter" class="normal-button wood candle">Save</button>
+                            </div>
+                        `;
+                        document.querySelector('body').appendChild(note_overlay);
+                        let text_div = document.createElement('div');
+                        text_div.className = "letter_text_div";
+                        text_div.style = "margin-top: 13.1%;"
+                        text_div.innerHTML = `<p id="paper_text" style="line-height: 0.98; font-size"></p>`;
+                        document.getElementById("paper_div").appendChild(text_div);
+                        paper_text = document.getElementById('paper_text');
+                        paper_textarea = document.getElementById('paper_textarea');
+                        paper_text.textContent = texts[page - 1]['note'];
+                        paper_textarea.value = texts[page - 1]['note'];
+                        paper_textarea.focus();
+                        paper_textarea.setSelectionRange(paper_textarea.value.length, paper_textarea.value.length);
+                        paper_textarea.blur();
+                        document.getElementById('save_letter').addEventListener('click', function() {
+                            clearInterval(paperInterval);
+                            texts[page - 1]['note'] = paper_textarea.value;
+                            fetch('/document', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    note: texts[page - 1]['note'],
+                                    level: page
+                                })
+                            }).catch(error => console.error('Failed to save note:', error));
+                            note_overlay.remove();
+                        });
+                        let paperInterval = setInterval(function() {
+                            paper_text.textContent = paper_textarea.value;
+                        }, 100);
+                        break;
+
+
+                    case 'rp':
+                    // Sequence array for the current page
+                        const sequenceArray = items[page]['others'];
+                        let currentIndex = 0; // Track the current sequence index
+
+                        function showNextItem() {
+                            if (currentIndex >= sequenceArray.length) {
+                                document.getElementById('overlay').remove();
+                                return;
+                            }
+
+                        // Create overlay and content element
+                            const overlay = document.createElement('div');
+                            overlay.className = 'overlay';
+                            overlay.id = 'overlay';
+                            overlay.style = "background-color: rgba(0,0,0,0.9); display: flex; justify-content: center;align-items: center;";
+                            overlay.style.zIndex = 4;
+                            document.querySelector('body').appendChild(overlay);
+
+                            const item = sequenceArray[currentIndex];
+                            const contentElement = document.createElement('div');
+                            contentElement.className = item.type; // Assign class based on type
+                            contentElement.style.display = 'flex';
+                            contentElement.style.justifyContent = 'center';
+                            contentElement.style.alignItems = 'center';
+
+                        // Add the appropriate content (e.g., an image or text)
+                            const img = document.createElement('img');
+                            img.src = item.content; // You will handle the content src
+                            img.style = 'width: 100%; height: auto; display: block;';
+                            img.style.display = 'block';
+                            img.style.margin = '0 auto';
+
+                            contentElement.appendChild(img);
+                            overlay.appendChild(contentElement);
+
+                        // Add click event to remove the current overlay and show the next item
+                            overlay.addEventListener('click', function() {
+                                overlay.remove();
+                                currentIndex++;
+                                showNextItem(); // Show the next item in the sequence
+                            });
+                        }
+
+                    // Start the sequence
+                        showNextItem();
+                        break;
+                }
+            });
+        });
+
+
+
+    // Sample JSON data for addresses
+        const address_book = JSON.parse({{address_book | tojson | safe}});
+
+        const wrapper = document.getElementById("address_wrapper");
+        const prevButton = document.getElementById("prev_page");
+        const nextButton = document.getElementById("next_page");
+        const addressesPerPage = 5;
+        let currentPage = 1;
+
+        function renderAddresses() {
+            wrapper.innerHTML = "";
+            const startIndex = (currentPage - 1) * addressesPerPage;
+            const endIndex = Math.min(startIndex + addressesPerPage, address_book.length);
+
+            for (let i = startIndex; i < endIndex; i++) {
+                const address = address_book[i];
+                const addressDiv = document.createElement("div");
+                addressDiv.classList.add("address-card");
+                addressDiv.style.padding = "10px";
+                addressDiv.style.marginBottom = "10px";
+                addressDiv.style.backgroundColor = "rgba(18,5,5,0.5)";
+                addressDiv.style.color = "#473C30";
+                addressDiv.style.borderRadius = "8px";
+                addressDiv.innerHTML = `
+                <p><strong>Name:</strong> ${address.name}</p>
+                <p><strong>Address:</strong> ${address.address}</p>
+                <p><strong>City:</strong> ${address.city}</p>
+                <p><strong>Zipcode:</strong> ${address.zipcode}</p>
+                <p><strong>Country:</strong> ${address.country}</p>
+            `;
+                wrapper.appendChild(addressDiv);
+            }
+
+            prevButton.style.display = currentPage > 1 ? "block" : "none";
+            nextButton.style.display = endIndex < address_book.length ? "block" : "none";
+        }
+
+        prevButton.addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderAddresses();
+            }
+        });
+
+        nextButton.addEventListener("click", () => {
+            if (currentPage * addressesPerPage < address_book.length) {
+                currentPage++;
+                renderAddresses();
+            }
+        });
+
+        renderAddresses();
+
+
+
+
+
+        let queryInterval = 0;
+
+        function close_overlays() {
+            open_chat.style.display = "block";
+            open_document.style.display = "block";
+            open_inventory.style.display = "block";
+            document_overlay.style.display = "none";
+            inventory_overlay.style.display = "none";
+            chat_overlay.style.display = "none";
+        }
+
+        function pre_overlay() {
+            open_chat.style.display = "none";
+            open_document.style.display = "none";
+            open_inventory.style.display = "none";
+            document_overlay.style.display = "none";
+            chat_overlay.style.display = "none";
+            inventory_overlay.style.display = "none";
+        }
+        open_document.addEventListener('click', function() {
+            pre_overlay();
+            document_overlay.style.display = "block";
+        });
+        open_chat.addEventListener('click', function() {
+            pre_overlay();
+            chat_overlay.style.display = "block";
+            queryInterval = setInterval(messageQuery(None, last_id), 1500);
+        });
+        open_inventory.addEventListener('click', function() {
+            pre_overlay();
+            inventory_overlay.style.display = "block";
+        });
+
+        close_document.addEventListener('click', function() {
+            close_overlays();
+        });
+
+        close_inventory.addEventListener('click', function() {
+            close_overlays();
+        });
+
+        close_chat.addEventListener('click', function() {
+            close_overlays();
+            clearInterval(queryInterval);
+        });
+
+        document.getElementById("fullscreen").addEventListener('click', function() {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                document.documentElement.requestFullscreen();
+                document.querySelector('nav').style.visibility = "hidden";
+            }
+        });
+        document.addEventListener('fullscreenchange', function() {
+            if (document.fullscreenElement) {
+                document.querySelector('nav').style.visibility = "hidden";
+            } else {
+                document.querySelector('nav').style.visibility = "visible";
+            }
+        })
+    </script>
+{% endblock %}

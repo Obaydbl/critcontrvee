@@ -1,0 +1,592 @@
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2;
+}
+
+.paper-div {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 96%;
+    width: 97%;
+    max-height: 150vw;
+    max-width: 90vh;
+    user-select: none;
+    background: transparent;
+    z-index: 5;
+}
+
+.paper {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    height: 100%;
+    width: 100%;
+    opacity: 0.98;
+    filter: brightness(105%) contrast(75%) blur(0.1px);
+    z-index: 5;
+}
+
+.paper-text {
+    font-family: 'hwriting';
+    position: absolute;
+    width: 83%;
+    margin-top: 7%;
+    margin-bottom: 7%;
+    margin-left: 9%;
+    margin-right: 7%;
+    overflow: auto;
+    opacity: 0.8;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+    z-index: 6;
+    font-size: clamp(3vh, 3vw, 5vh);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.wood {
+    user-select: none;
+    background-color: #0E0305;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.candle {
+
+    color: #7C5721 !important;
+    font-weight: 700;
+}
+
+.normaltxt {
+    color: #76634F;
+    font-weight: 700;
+
+}
+
+img {
+    -webkit-user-drag: none;
+}
+
+@font-face {
+    font-family: 'hwriting';
+    src: url('/static/hwriting.ttf');
+}
+
+@font-face {
+    font-family: 'hwriting2';
+    src: url('/static/hwriting2.ttf');
+}
+
+.bgclass {
+    background-size: cover;
+    background-position: center;
+}
+
+.doc {
+    position: absolute;
+    z-index: 2;
+    height: 48vw;
+    width: 80vw;
+    max-height: 600px;
+    max-width: 1000px;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    -webkit-user-drag: none;
+    user-select: none;
+
+}
+/**
+.login {
+    border-top-right-radius: 15px;
+    border-top-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    border-bottom-left-radius: 15px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    height: 40vh;
+    transform: translate(-50%, -50%);
+    user-select: none;
+    z-index: 3;
+    width: 360px;
+    padding: 8% 0 0;
+    margin: auto;
+}
+
+
+.form {
+    position: relative;
+    z-index: 4;
+    margin: 0 auto 100px;
+    padding: 45px;
+    text-align: center;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+}
+
+.form input {
+    background-color: #321C10;
+    outline: 0;
+    width: 100%;
+    border: 0;
+    margin: 0 0 15px;
+    padding: 15px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.form button {
+    text-transform: uppercase;
+    outline: 0;
+    width: 100%;
+    border: 0;
+    padding: 15px;
+    font-size: 14px;
+    -webkit-transition: all 0.3 ease;
+    transition: all 0.3 ease;
+    cursor: pointer;
+} **/
+
+.chat {
+    color: #06080F !important;
+    font-weight: 700;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -45%);
+    height: 80vh;
+    width: auto;
+    max-width: 95vw;
+    z-index: 4;
+}
+
+.chat img {
+    height: 80vh;
+    width: auto;
+    max-width: 95vw;
+}
+
+.messages {
+    position: absolute;
+    height: 70%;
+    width: 70%;
+    z-index: 4;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -55%);
+    scrollbar-width: thin;
+    border: 2px solid #261F16;
+    border-radius: 3px;
+    scrollbar-color: #7C5721 #0E0305;
+    word-wrap: break-word;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+br {
+    display: block;
+    margin: 0;
+    line-height: 0.1;
+}
+
+.message-span {
+    display: inline-block;
+    border-bottom: 2px solid rgb(143, 108, 67, 0.5);
+    border-radius: 3px;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+
+}
+
+.messages::-webkit-scrollbar {
+    width: 12px;
+}
+
+.messages::-webkit-scrollbar-track {
+    border-radius: 8px;
+    background-color: #0E0305;
+}
+
+.messages::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    background-color: #7C5721;
+}
+
+.message-input {
+    position: absolute;
+    z-index: 5;
+    bottom: 2%;
+    left: 57%;
+    transform: translateX(-57%);
+    height: 10vh;
+    width: 70%;
+    display: flex;
+    align-items: center;
+}
+
+.message-input textarea {
+    color: #06080F !important;
+    font-weight: 700;
+    background-color: #956E44;
+    width: 100%;
+    height: 100%;
+    border: 2px solid #261F16;
+    border-radius: 3px;
+}
+
+.ownmessage {
+    width: 70%;
+    position: absolute;
+    bottom: 5%;
+    left: 50%;
+    transform: translate(-50%, -5%);
+    z-index: 6;
+    color: #0E160C !important;
+    font-weight: 700;
+    background-color: #404C38;
+    height: 3.2em;
+    line-height: 1.5em;
+    resize: none;
+    border: 2px solid #261F16;
+    border-radius: 3px;
+}
+.normalbutton {
+  background-image: linear-gradient(#0E0305, #160805);
+  border: 0;
+  border-radius: 4px;
+  box-shadow: rgba(0, 0, 0, .3) 0 5px 15px;
+  box-sizing: border-box;
+  cursor: pointer;
+  font-size: .9em;
+  margin: 5px;
+  padding: 10px 15px;
+  text-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+input:disabled {
+    background-color: rgba(14, 3, 5, 0.5) !important;
+    color: #DEE1EC !important;
+  }
+
+.popup {
+   width: 450px;
+   border-radius: 8px;
+   padding: 30px;
+   text-align: center;
+   border: 3px solid rgba(53,37,22, 0.5);
+   position: fixed;
+   top: 40%;
+   left: 50%;
+   transform: translate(-50%, -60%);
+   user-select: none;
+   z-index: 6;
+   margin: auto;
+   opacity: 97%;
+}
+
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.letter_text_div {
+    height: 84%;
+    width: 90%;
+    box-sizing: border-box;
+    position: absolute;
+    top: 0%;
+    left: 0%;
+    margin: 8% 5%;
+    font-family: "hwriting2";
+    position: absolute;
+    z-index: 7;
+    overflow: auto;
+    opacity: 0.8;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+    font-size: clamp(16px, 4.2vh, 4.2vh);
+    overflow-wrap: break-word;
+}
+
+
+.normal_button {
+    background: #0E0305;
+    color: #7C5721;
+    font-weight: 600;
+    border: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 16px;
+    border: 2px solid transparent;
+    transition: 0.3s ease;
+  }
+
+  .normal_button:hover {
+    border-color: rgba(53,37,22, 0.5);
+    background: rgb(14,3,5, 0.9)
+  }
+
+  @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@200;300;400;500;600;700&display=swap");
+
+
+.wrapper {
+  width: 400px;
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  border: 3px solid rgba(53,37,22, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  user-select: none;
+  z-index: 3;
+  margin: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #7C5721 #0E0305;
+}
+
+*::-webkit-scrollbar {
+  width: 12px;
+}
+
+*::-webkit-scrollbar-track {
+  border-radius: 8px;
+  background-color: #0E0305;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background-color: #7C5721;
+}
+
+/* Bottom Navigation Buttons */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    background-color: rgba(14, 3, 5, 0.9);
+    z-index: 2;
+}
+
+.bottom-nav button {
+    flex: 1;
+    margin: 0;
+    padding: 15px 10px;
+    font-size: 16px;
+    text-align: center;
+    border: none;
+    background-color: #0E0305;
+    color: #7C5721;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.bottom-nav button:hover {
+    background-color: rgba(53, 37, 22, 0.9);
+}
+
+.normal-button {
+    flex: 1;
+    margin: 0;
+    padding: 15px 10px;
+    font-size: 16px;
+    text-align: center;
+    border: none;
+    background-color: #0E0305;
+    color: #7C5721;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+
+.normal-button:hover {
+    background-color: rgba(53, 37, 22, 0.9);
+}
+
+/* Inbox Navigation Buttons */
+.inbox-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    padding: 10px 0;
+    background-color: rgba(14, 3, 5, 0.6);
+}
+
+.inbox-nav button {
+    flex: 1;
+    margin: 0 5px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    border: none;
+    background-color: #0E0305;
+    color: #7C5721;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: 0.3s;
+}
+
+.inbox-nav button:hover {
+    background-color: rgba(53, 37, 22, 0.9);
+}
+
+.envelope {
+    background-color: rgba(0,0,0,0.7);
+    width: 60%; /* Base width for horizontal content */
+    max-width: 800px; /* Limit maximum width */
+    height: auto; /* Maintain aspect ratio */
+    max-height: 70vh; /* Prevent it from exceeding 70% of the viewport height */
+    margin: 0 auto;
+    border: 4px solid #0E0305;
+}
+
+
+.letter {
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+    max-height: 90vh;
+    border: 4px solid #0E0305; /* Add a border for visibility */
+    margin: 0 auto; /* Center the container horizontally */
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.letter img {
+    max-height: 90vh;
+    max-width: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+/* Photograph class: square or slightly rectangular */
+.photograph {
+    background-color: rgba(0,0,0,0.7);
+    width: 50%; /* Moderate width for photographs */
+    max-width: 500px; /* Limit maximum width */
+    height: auto; /* Maintain aspect ratio */
+    max-height: 80vh; /* Prevent it from exceeding 80% of the viewport height */
+    margin: 0 auto;
+    border: 4px solid #0E0305;
+}
+.chat-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px; /* Space between the textarea and button */
+    background-color: rgba(14, 3, 5, 0.5); /* Match the theme background */
+    padding: 10px;
+    border-radius: 8px; /* Rounded corners */
+
+    /* Positioning */
+    position: fixed;
+    bottom: 4%; /* Margin from the bottom of the viewport */
+    left: 50%; /* Center horizontally relative to the viewport */
+    transform: translateX(-50%); /* Offset by half the width for true centering */
+
+    /* Responsive width */
+    width: 90vw; /* Take up 90% of the viewport width */
+    max-width: 400px; /* Cap the width for larger screens */
+
+    /* Optional shadow for better visibility */
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.3);
+}
+
+
+/* Styled Textarea */
+.styled-textarea {
+    flex-grow: 1; /* Take up available space */
+    height: 60px;
+    max-height: 120px; /* Limit height */
+    padding: 10px;
+    border: 2px solid #8B4513; /* Brown border matching theme */
+    border-radius: 6px;
+    font-size: 16px;
+    font-family: 'Arial', sans-serif; /* Choose a readable font */
+    background-color: rgba(245, 222, 179, 0.9); /* Light brown/golden background */
+    color: #4B2C20; /* Dark brown text */
+    resize: none; /* Disable resizing for consistent styling */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+}
+
+/* Textarea Focus State */
+.styled-textarea:focus {
+    outline: none;
+    border-color: #D2691E; /* Highlighted brown when focused */
+    box-shadow: 0 0 8px rgba(210, 105, 30, 0.5); /* Glow effect */
+}
+
+/* Send Button */
+.send-button {
+    height: 60px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #FFFFFF; /* White text */
+    background-color: #8B4513; /* Brown background */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+}
+
+/* Send Button Hover State */
+.send-button:hover {
+    background-color: #D2691E; /* Lighter brown on hover */
+    transform: scale(1.05); /* Slight pop effect */
+}
+
+/* Send Button Active State */
+.send-button:active {
+    background-color: #4B2C20; /* Dark brown on click */
+    transform: scale(0.95); /* Slight shrink effect */
+}
+
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(124, 87, 34, 1)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+input[type="checkbox"] {
+    background-color: #0E0305; /* Background color of the checkbox */
+}
+
+input[type="checkbox"]:checked {
+    background-color: #7C5721; /* Background color when checked */
+}

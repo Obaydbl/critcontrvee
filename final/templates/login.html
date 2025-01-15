@@ -1,0 +1,25 @@
+
+{% extends "layout.html" %}
+{% block head %} <link href="/static/login.css" rel="stylesheet"> {% endblock %}
+{% block title %}Login{% endblock %}
+{% block bg %}main.webp{% endblock %}
+
+{% block body %}
+
+    <div class="overlay">
+        <div class="wrapper">
+            <form action="/login" method="post">
+                <h2>Login</h2>
+                <div class="input-field">
+                    <input autocomplete="off" autofocus name="username" type="text" required>
+                    <label>Enter your username</label>
+                </div>
+                <div class="input-field">
+                    <input autocomplete="off" autofocus name="password" type="password" required>
+                    <label>Enter your password</label>
+                </div>
+                <button type="submit">Log In</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

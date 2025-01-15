@@ -1,0 +1,8 @@
+cs50==9.3.4
+Flask==3.0.3
+Flask-Session==0.8.0
+numpy==1.26.4
+pillow==10.4.0
+rembg==2.0.61
+Werkzeug==3.0.4
+

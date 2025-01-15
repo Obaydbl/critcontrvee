@@ -1,0 +1,113 @@
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@200;300;400;500;600;700&display=swap");
+
+
+.wrapper {
+  width: 400px;
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  border: 3px solid rgba(53,37,22, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  user-select: none;
+  z-index: 3;
+  margin: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #7C5721 #0E0305;
+}
+
+.wrapper::-webkit-scrollbar {
+  width: 12px;
+}
+
+.wrapper::-webkit-scrollbar-track {
+  border-radius: 8px;
+  background-color: #0E0305;
+}
+
+.wrapper::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background-color: #7C5721;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #7C5721;
+}
+
+.input-field {
+  position: relative;
+  border-bottom: 2px solid rgba(53,37,22, 0.5);
+  margin: 15px 0;
+}
+
+.input-field label {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  color: #7D725C;
+  font-size: 16px;
+  font-weight: 500;
+  pointer-events: none;
+  transition: 0.15s ease;
+  text-shadow: 1px 1px 0 #120906, -1px -1px 0 #120906, 1px -1px 0 #120906, -1px 1px 0 #120906;
+}
+
+.input-field input {
+  width: 100%;
+  height: 40px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #DEE1EC;
+}
+
+
+.input-field input:focus~label,
+.input-field input:disabled~label,
+.input-field input:valid~label {
+  font-size: 0.8rem;
+  top: 10px;
+  transform: translateY(-120%);
+}
+
+
+
+.wrapper a {
+  color: #efefef;
+  text-decoration: none;
+}
+
+.wrapper a:hover {
+  text-decoration: underline;
+}
+
+button {
+  background: #0E0305;
+  color: #7C5721;
+  font-weight: 600;
+  border: none;
+  padding: 12px 20px;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 16px;
+  border: 2px solid transparent;
+  transition: 0.3s ease;
+}
+
+button:hover {
+  border-color: rgba(53,37,22, 0.5);
+  background: rgb(14,3,5, 0.9)
+}

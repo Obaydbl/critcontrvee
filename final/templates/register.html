@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block head %}
+    <link href="/static/login.css" rel="stylesheet"> {% endblock %}
+{% block title %}Register{% endblock %}
+{% block bg %}main.webp{% endblock %}
+
+{% block body %}
+    <div class="overlay">
+        <div class="wrapper">
+            <form action="/register" method="post">
+                <h2>Register</h2>
+                <div class="input-field">
+                    <input autocomplete="off" autofocus name="username" type="text" minlength="2" maxlength="15" required>
+                    <label>Enter your username</label>
+                </div>
+                <div class="input-field">
+                    <input autocomplete="off" autofocus name="password" type="password" minlength="5" maxlength="20" required>
+                    <label>Enter your password</label>
+                </div>
+                <div class="input-field">
+                    <input autocomplete="off" autofocus name="confirm" type="password" minlength="5" maxlength="20" required>
+                    <label>Confirm your password</label>
+                </div>
+                <button type="submit">Register</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

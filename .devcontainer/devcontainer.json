@@ -1,0 +1,13 @@
+{
+    "name": "Dcontainer",
+    "settings": {
+      "python.pythonPath": "/usr/local/bin/python"
+    },
+    "extensions": [
+      "ms-python.python",
+      "ms-vscode.cpptools"
+    ],
+    "remoteUser": "root"
+    
+  }
+  

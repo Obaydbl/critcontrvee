@@ -16,6 +16,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy your application code
 COPY . .
 
+# Copy requirements.txt first (so Docker can cache this layer)
+COPY requirements.txt .
+
+# Install Python dependencies (this installs gunicorn too)
+RUN pip install --no-cache-dir -r requirements.txt
+
 # Ensure the C binary is executable
 RUN chmod +x ./c_program/my_binary
 

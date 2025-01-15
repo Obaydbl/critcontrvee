@@ -6,7 +6,6 @@ import os
 import subprocess
 from io import BytesIO
 from PIL import Image
-from rembg import remove
 
 def login_required(f):
     @wraps(f)
@@ -118,14 +117,6 @@ def generate_image(route, address, username, recipient = None):
     print("converting image")
     image.save(imageIO, "PNG", optimize=True, quality=85)
     print("converted image")
-
-    if not (route == 'envOwn'):
-        image = image.convert("RGBA")
-        image = Image.open(imageIO)
-        print("removing bg")
-        image = remove(image, model="fast")
-        imageIO = io.BytesIO()
-        image.save(imageIO, "PNG")
 
     print(f"saved image, size is {len(imageIO.getbuffer())}")
     imageIO.seek(0)

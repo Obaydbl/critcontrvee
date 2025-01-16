@@ -1,3 +1,4 @@
+
 # Start from the Python base image
 FROM python:3.11-slim
 
@@ -25,7 +26,6 @@ WORKDIR /
 COPY requirements.txt .
 
 # Install Python dependencies (these change less often than code)
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 # Copy the rest of your app's code
 COPY . .
@@ -36,5 +36,6 @@ ENV FLASK_RUN_HOST=0.0.0.0
 
 # Expose port 5000
 EXPOSE 5000
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT app:app"]

@@ -138,7 +138,7 @@ def chat():
             date = c.strftime('%y-%m-%d %H:%M:%S')
             db.execute("INSERT INTO messages (user_id, message, date) VALUES(?, ?, ?);", session['user_id'], message, date)
         if last_id := data.get('last_id'):
-            messages = db.execute("SELECT * FROM (SELECT users.username, messages.message, messages.id FROM users JOIN messages ON users.id = messages.user_id WHERE messages.id > ? ORDER BY messages.id DESC) ORDER BY id ASC;", last_id)
+            messages = db.execute("SELECT * FROM (SELECT users.username, messages.message, messages.id FROM users JOIN messages ON users.id = messages.user_id WHERE messages.id > ? ORDER BY messages.id DESC) as subquery ORDER BY id ASC;", last_id)
             return jsonify(messages), 203
         return '', 203
 
@@ -213,7 +213,7 @@ def query_for_modify(user_id, route):
     if not (str(user_id) == str(session['user_id'])):
         return "u aint no slick", 403
 
-    if not (state := db.execute("SELECT modified FROM envelopes_modify WHERE user_id = ? AND route = ?;", user_id, route)[0]):
+    if not (state := db.execute("SELECT modified FROM envelopes_modify WHERE user_id = ? AND route = ?;", user_id, route)):
         db.execute("INSERT INTO envelopes_modify (user_id, route) VALUES(?, ?);", user_id, route)
         return '', 200
     if  state[0]['modified']:
@@ -301,7 +301,7 @@ def mix():
         if(not db.execute("SELECT * FROM notes WHERE user_id = ? AND level = ?;", session["user_id"], i)):
             db.execute("INSERT INTO notes (user_id, level) VALUES (?, ?);", session["user_id"], i)
 
-    texts = json.dumps(db.execute("SELECT * FROM (SELECT note, letters.level, letter FROM (SELECT note, level FROM notes WHERE user_id = ?) AS notes JOIN letters ON notes.level = letters.level) WHERE level <= ? ORDER BY level ASC;", session["user_id"], lvl))
+    texts = json.dumps(db.execute("SELECT * FROM (SELECT note, letters.level, letter FROM (SELECT note, level FROM notes WHERE user_id = ?) AS notes JOIN letters ON notes.level = letters.level) as subquery WHERE level <= ? ORDER BY level ASC;", session["user_id"], lvl))
     address_book = json.dumps(db.execute("SELECT name, address, city, zipcode, country FROM address_book ORDER BY indx ASC;"))
     items = defaultdict(lambda: {"document": None, "others": []})
 

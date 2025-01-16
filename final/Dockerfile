@@ -33,5 +33,4 @@ ENV FLASK_RUN_HOST=0.0.0.0
 # Expose port 5000 for the Flask app to be accessible
 EXPOSE 5000
 
-# Use gunicorn to serve the Flask app on port 5000
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "app:app"]

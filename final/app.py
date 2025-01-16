@@ -12,6 +12,9 @@ app = Flask(__name__)
 app.secret_key = 'aa0e62f3a9fe7935e90248f484755e2d4c7a917935090e42a67551dda2d1010f'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=90)
 
+if __name__ == '__main__':
+    port = int(os.getenv('PORT', 5000))  
+    app.run(host='0.0.0.0', port=port)
 
 MAX_LEVELS = 7
 

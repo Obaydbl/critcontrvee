@@ -16,8 +16,6 @@ def login_required(f):
     return decorated_function
 
 
-def nothing():
-    return
 
 def logout_required(f):
     @wraps(f)

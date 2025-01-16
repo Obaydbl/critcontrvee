@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
 MAX_LEVELS = 7
 
-db = SQL("sqlite:///z.db")
+db = SQL("mysql://root:ubBTIautGcTbQZskppUZasffRhVbAYvZ@junction.proxy.rlwy.net:47430/railway")
 @app.after_request
 def add_cache_control(response):
     if request.path.startswith('/static/'):
@@ -119,9 +119,6 @@ def register():
             id = db.execute("SELECT id FROM users WHERE username = ?;", username)[0]['id']
             address = generate_address()
             db.execute("INSERT INTO addresses (user_id, street, city, zip, country) VALUES(?, ?, ?, ?, ?);", id ,address["street"], address["city"], address["zip"], address["country"])
-            for i in range(1, MAX_LEVELS + 1, 1):
-                db.execute("INSERT INTO notes (user_id, level) VALUES (?, ?);", id, i)
-                db.execute("INSERT INTO envelopes_modify (user_id, route) VALUES (?, ?);", id, "env" + str(i))
 
         except ValueError:
             flash('Username already exists')
@@ -167,7 +164,7 @@ def document():
             return "Couldn't save", 300
     else:
         level = db.execute("SELECT level FROM users WHERE id = ?;", session["user_id"])[0]['level']
-        texts = json.dumps(db.execute("SELECT * FROM (SELECT note, letters.level, letter FROM (SELECT note, level FROM notes WHERE user_id = ?) AS notes JOIN letters ON notes.level = letters.level) WHERE level <= ? ORDER BY level ASC;", session["user_id"], level))
+        texts = json.dumps(db.execute("SELECT * FROM (SELECT note, letters.level, letter FROM (SELECT note, level FROM notes WHERE user_id = ?) AS notes JOIN letters ON notes.level = letters.level) as subquery WHERE level <= ? ORDER BY level ASC;", session["user_id"], level))
         return render_template("document.html", texts = texts, level = level)
 
 @app.route('/static/<path:filename>')
@@ -183,13 +180,6 @@ def custom_static(filename):
 
     response = send_from_directory('static', filename)
     response.headers['Last-Modified'] = last_modified
-    if (filename[0:3 == "zxy"]):
-        try:
-            if (int(filename[4 : filename.index('.')]) <= db.execute("SELECT level FROM users WHERE id = ?;", session["user_id"])[0]['level']):
-                return response
-            abort(403)
-        except Exception:
-            return response
     return response
 
 
@@ -223,7 +213,7 @@ def query_for_modify(user_id, route):
     if not (str(user_id) == str(session['user_id'])):
         return "u aint no slick", 403
 
-    if not (state := db.execute("SELECT modified FROM envelopes_modify WHERE user_id = ? AND route = ?;", user_id, route)):
+    if not (state := db.execute("SELECT modified FROM envelopes_modify WHERE user_id = ? AND route = ?;", user_id, route)[0]):
         db.execute("INSERT INTO envelopes_modify (user_id, route) VALUES(?, ?);", user_id, route)
         return '', 200
     if  state[0]['modified']:
@@ -305,11 +295,12 @@ def submit_address():
 @app.route("/home")
 @login_required
 def mix():
-    messages = db.execute("SELECT * FROM (SELECT users.username, messages.message, messages.id FROM users JOIN messages ON users.id = messages.user_id ORDER BY messages.id DESC LIMIT 50) ORDER BY id ASC;")
-    if not messages:
-        return render_template("mix.html", messages = None, last_id = 0)
-
+    messages = db.execute("""SELECT username, message, id FROM (SELECT users.username, messages.message, messages.id FROM users JOIN messages ON users.id = messages.user_id ORDER BY messages.id DESC LIMIT 50) AS subquery ORDER BY subquery.id ASC;""")
     lvl = db.execute("SELECT level FROM users WHERE id = ?;", session["user_id"])[0]['level']
+    for i in range(1, lvl + 1):
+        if(not db.execute("SELECT * FROM notes WHERE user_id = ? AND level = ?;", session["user_id"], i)):
+            db.execute("INSERT INTO notes (user_id, level) VALUES (?, ?);", session["user_id"], i)
+
     texts = json.dumps(db.execute("SELECT * FROM (SELECT note, letters.level, letter FROM (SELECT note, level FROM notes WHERE user_id = ?) AS notes JOIN letters ON notes.level = letters.level) WHERE level <= ? ORDER BY level ASC;", session["user_id"], lvl))
     address_book = json.dumps(db.execute("SELECT name, address, city, zipcode, country FROM address_book ORDER BY indx ASC;"))
     items = defaultdict(lambda: {"document": None, "others": []})

@@ -1,0 +1,14 @@
+SET FOREIGN_KEY_CHECKS=0;
+START TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS user_letters (
+    user_id INT NOT NULL,
+    level INT NOT NULL,
+    message VARCHAR(1000) DEFAULT " ",
+    attachments VARCHAR (1000) DEFAULT "",
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+
+COMMIT;
+SET FOREIGN_KEY_CHECKS=1;

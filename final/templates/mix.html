@@ -504,7 +504,8 @@
         open_chat.addEventListener('click', function() {
             pre_overlay();
             chat_overlay.style.display = "block";
-            queryInterval = setInterval(messageQuery(None, last_id), 1500);
+            messagebox.scrollTop = messagebox.scrollHeight;
+            queryInterval = setInterval(messageQuery(None, last_id), 2500);
         });
         open_inventory.addEventListener('click', function() {
             pre_overlay();

@@ -1,39 +1,28 @@
 # Start from the Python base image
 FROM python:3.11-slim
 
-# Install required tools and add MySQL APT repository
-RUN apt-get update && apt-get install -y \
-    wget \
-    lsb-release \
-    gnupg \
-    && wget https://dev.mysql.com/get/mysql-apt-config_0.8.26-1_all.deb \
-    && dpkg -i mysql-apt-config_0.8.26-1_all.deb \
-    && apt-get update
-
-# Install MySQL development libraries and other dependencies
+# Install required system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
-    make \
-    curl \
-    git \
     build-essential \
-    libmysqlclient-dev \
+    libmariadb-dev-compat \
+    libmariadb-dev \
     libssl-dev \
     zlib1g-dev \
     && apt-get clean
 
-# Upgrade pip, setuptools, and wheel
+# Upgrade pip, setuptools, and wheel for smooth installation of Python packages
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# Set the working directory
-WORKDIR /app
+# Set the working directory to the root directory
+WORKDIR /
 
 # Copy requirements.txt and install Python dependencies
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt --verbose
+COPY requirements.txt /requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt --verbose
 
-# Copy the rest of the application code
-COPY . /app
+# Copy the rest of the application code to the root directory
+COPY . /
 
 # Set environment variables for Flask
 ENV FLASK_APP=app.py

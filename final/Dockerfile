@@ -1,15 +1,5 @@
 # Start from the Python base image
-FROM python:3.11-slim
-
-# Install required system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    build-essential \
-    libmariadb-dev-compat \
-    libmariadb-dev \
-    libssl-dev \
-    zlib1g-dev \
-    && apt-get clean
+FROM python:3.11-bullseye
 
 # Upgrade pip, setuptools, and wheel for smooth installation of Python packages
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel

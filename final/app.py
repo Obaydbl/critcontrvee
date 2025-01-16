@@ -38,7 +38,7 @@ def index():
 
 
 @app.route("/login", methods=["GET", "POST"])
-@logout_required
+@login_required
 def login():
     """Log user in"""
 
@@ -123,7 +123,7 @@ def register():
         except ValueError:
             flash('Username already exists')
             return redirect('/register')
-        return redirect("/login")
+        return render_template("done.html")
     else:
         return render_template("register.html")
 
@@ -298,10 +298,12 @@ def mix():
     messages = db.execute("""SELECT username, message, id FROM (SELECT users.username, messages.message, messages.id FROM users JOIN messages ON users.id = messages.user_id ORDER BY messages.id DESC LIMIT 50) AS subquery ORDER BY subquery.id ASC;""")
     lvl = db.execute("SELECT level FROM users WHERE id = ?;", session["user_id"])[0]['level']
     for i in range(1, lvl + 1):
-        if(not db.execute("SELECT * FROM notes WHERE user_id = ? AND level = ?;", session["user_id"], i)):
+        result = db.execute("SELECT * FROM notes WHERE user_id = ? AND level = ?;", session["user_id"], i)
+        if (not db.execute("SELECT * FROM notes WHERE user_id = ? AND level = ?;", session["user_id"], i)):
             db.execute("INSERT INTO notes (user_id, level) VALUES (?, ?);", session["user_id"], i)
 
-    texts = json.dumps(db.execute("SELECT * FROM (SELECT note, letters.level, letter FROM (SELECT note, level FROM notes WHERE user_id = ?) AS notes JOIN letters ON notes.level = letters.level) as subquery WHERE level <= ? ORDER BY level ASC;", session["user_id"], lvl))
+    texts = json.dumps(db.execute("SELECT note, level FROM notes WHERE user_id = ? AND level <= ? ORDER BY level ASC;", session["user_id"], lvl))
+    print(texts)
     address_book = json.dumps(db.execute("SELECT name, address, city, zipcode, country FROM address_book ORDER BY indx ASC;"))
     items = defaultdict(lambda: {"document": None, "others": []})
 

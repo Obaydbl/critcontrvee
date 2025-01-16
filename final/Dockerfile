@@ -18,8 +18,9 @@ COPY . /
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV PORT=5000
-# Expose port 5000
-EXPOSE 5000
 
-# Run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "app:app"]
+# Expose the port to match the default or runtime override
+EXPOSE $PORT
+
+# Run the application using `sh` to expand `$PORT` properly
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT app:app"]

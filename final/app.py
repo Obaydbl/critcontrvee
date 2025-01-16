@@ -99,16 +99,16 @@ def register():
         if not (password == request.form.get("confirm")):
             flash('Passwords do not match')
             return redirect('/register')
-        if (len(password) < 5):
+        if (len(password) < 3):
             flash('Passwords is too short.')
             return redirect('/register')
-        if (len(password) > 20):
+        if (len(password) > 25):
             flash('Passwords is too long')
             return redirect('/register')
         if (len(username) < 2):
             flash('Username is too short.')
             return redirect('/register')
-        if (len(username) > 15):
+        if (len(username) > 25):
             flash('Username is too long')
             return redirect('/register')
 

@@ -2,16 +2,24 @@
 # Start from the Python base image
 FROM python:3.11-slim
 
-# Install any system dependencies (e.g., cs50 library for C)
 RUN apt-get update && apt-get install -y \
     gcc \
     make \
     curl \
-    libcs50-dev \
+    git \
+    build-essential \
     && apt-get clean
 
+# Install libcs50 from the GitHub repository
+RUN git clone https://github.com/cs50/libcs50.git /tmp/libcs50 && \
+    cd /tmp/libcs50 && \
+    make && \
+    make install && \
+    cd / && \
+    rm -rf /tmp/libcs50
+
 # Set the working directory
-WORKDIR /app
+WORKDIR .
 
 # Copy the requirements.txt (this ensures Docker uses cache unless requirements change)
 COPY requirements.txt .

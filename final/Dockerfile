@@ -19,10 +19,10 @@ RUN git clone https://github.com/cs50/libcs50.git /tmp/libcs50 && \
     rm -rf /tmp/libcs50
 
 # Set the working directory
-WORKDIR .
+WORKDIR /
 
 # Copy the requirements.txt (this ensures Docker uses cache unless requirements change)
-COPY requirements.txt .
+COPY . .
 
 # Install dependencies (including Gunicorn and other Python libraries)
 RUN pip install --no-cache-dir -r requirements.txt

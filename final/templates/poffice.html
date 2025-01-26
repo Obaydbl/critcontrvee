@@ -62,11 +62,15 @@
         const attachmentOverlay = document.getElementById('attachment-overlay');
         let letter = `{{ letter }}`;
         let envelopeURL = "";
+        let letterURL = "";
 
         window.onload = () => {
             const loading_overlay = document.getElementById('loading_overlay');
             function all_loaded() {
-                return !!envelopeURL;
+                if (envelopeURL == "") {
+                    return true;
+                }
+                return true;
             }
             function removeLoadingOverlay() {
                 if (all_loaded()) {
@@ -74,53 +78,100 @@
                     loading_overlay.addEventListener('transitionend', () => {
                         loading_overlay.remove();
                     });
+                    clearInterval(loadingInterval);
                 }
             }
-            setInterval(removeLoadingOverlay, 250);
+            let loadingInterval = setInterval(removeLoadingOverlay, 250);
+
         };
 
+            caches.open('envelopes').then(cache => {
+                    cache.match(`/makeEnv/{{ session['user_id'] }}/envOwn`).then(cachedImage => {
+                        if (cachedImage) {
+                            fetch(`/q/{{ session['user_id'] }}/envOwn`)
+                            .then(response => {
+                                if (response.status === 304) {
+                                    return cachedImage.blob()
+                                }
+                                else {
+                                    fetch(`/makeEnv/{{ session['user_id'] }}/envOwn`)
+                                    .then(response => {
+                                    cache.put(`/makeEnv/{{ session['user_id'] }}/envOwn`, response.clone());
+                                    return response.blob()})
+                                    .then(image => {
+                                    envelopeURL = URL.createObjectURL(image);
+                                    console.log('Resource modified, Image Blob created:', envelopeURL);
+                                    }).catch(error => console.error('Fetch error 2:', error));
+                                }
+                            }).then( cachedImage => {
+                                if (cachedImage) {
+                                    envelopeURL = URL.createObjectURL(cachedImage);
+                                    console.log(`Using cached for envOwn`, envelopeURL);
+                                }
+                            });
+                        }
+                        else {
+                            fetch(`/makeEnv/{{ session['user_id'] }}/envOwn`)
+                            .then(response => {
+                            cache.put(`/makeEnv/{{ session['user_id'] }}/envOwn`, response.clone());
+                            console.log('Cache populated for:', `/makeEnv/{{ session['user_id'] }}/envOwn`);
+                            cache.match(`/makeEnv/{{ session['user_id'] }}/envOwn`).then(cachedImage => {
+                            console.log('Cache match result:', cachedImage);
+                            });
+                            return response.blob()})
+                            .then(image => {
+                            envelopeURL = URL.createObjectURL(image);
+                            console.log('Cache doesnt exist, Image Blob created:', envelopeURL);
+                            }).catch(error => console.error('Fetch error 2:', error));
+                        }
+                    })
+            });
 
-        caches.open('envelopes').then(cache => {
-                cache.match(`/makeEnv/{{ session['user_id'] }}/envOwn`).then(cachedImage => {
-                    if (cachedImage) {
-                        fetch(`/q/{{ session['user_id'] }}/envOwn`)
-                        .then(response => {
-                            if (response.status === 304) {
-                                return cachedImage.blob()
-                            }
-                            else {
-                                fetch(`/makeEnv/{{ session['user_id'] }}/envOwn`)
-                                .then(response => {
-                                cache.put(`/makeEnv/{{ session['user_id'] }}/envOwn`, response.clone());
-                                return response.blob()})
-                                .then(image => {
-                                envelopeURL = URL.createObjectURL(image);
-                                console.log('Resource modified, Image Blob created:', envelopeURL);
-                                }).catch(error => console.error('Fetch error 2:', error));
-                            }
-                        }).then( cachedImage => {
-                            if (cachedImage) {
-                                envelopeURL = URL.createObjectURL(cachedImage);
-                                console.log('Using cached for envOwn', envelopeURL);
-                            }
-                        });
-                    }
-                    else {
-                        fetch(`/makeEnv/{{ session['user_id'] }}/envOwn`)
-                        .then(response => {
-                        cache.put(`/makeEnv/{{ session['user_id'] }}/envOwn`, response.clone());
-                        console.log('Cache populated for:', `/makeEnv/{{ session['user_id'] }}/envOwn`);
-                        cache.match('/makeEnv/{{ session['user_id'] }}/envOwn').then(cachedImage => {
-                        console.log('Cache match result:', cachedImage);
-                        });
-                        return response.blob()})
-                        .then(image => {
-                        envelopeURL = URL.createObjectURL(image);
-                        console.log('Cache doesnt exist, Image Blob created:', envelopeURL);
-                        }).catch(error => console.error('Fetch error 2:', error));
-                    }
-                })
-        });
+            
+            caches.open('envelopes').then(cache => {
+                    cache.match(`/makeEnv/{{ session['user_id'] }}/letterOwn`).then(cachedImage => {
+                        if (cachedImage) {
+                            fetch(`/q/{{ session['user_id'] }}/letterOwn`)
+                            .then(response => {
+                                if (response.status === 304) {
+                                    return cachedImage.blob()
+                                }
+                                else {
+                                    fetch(`/makeEnv/{{ session['user_id'] }}/letterOwn`)
+                                    .then(response => {
+                                    cache.put(`/makeEnv/{{ session['user_id'] }}/letterOwn`, response.clone());
+                                    return response.blob()})
+                                    .then(image => {
+                                    letterURL = URL.createObjectURL(image);
+                                    console.log('Resource modified, Image Blob created:', letterURL);
+                                    }).catch(error => console.error('Fetch error 2:', error));
+                                }
+                            }).then( cachedImage => {
+                                if (cachedImage) {
+                                    letterURL = URL.createObjectURL(cachedImage);
+                                    console.log(`Using cached for letterOwn`, letterURL);
+                                }
+                            });
+                        }
+                        else {
+                            fetch(`/makeEnv/{{ session['user_id'] }}/letterOwn`)
+                            .then(response => {
+                            cache.put(`/makeEnv/{{ session['user_id'] }}/letterOwn`, response.clone());
+                            console.log('Cache populated for:', `/makeEnv/{{ session['user_id'] }}/letterOwn`);
+                            cache.match(`/makeEnv/{{ session['user_id'] }}/letterOwn`).then(cachedImage => {
+                            console.log('Cache match result:', cachedImage);
+                            });
+                            return response.blob()})
+                            .then(image => {
+                            letterURL = URL.createObjectURL(image);
+                            console.log('Cache doesnt exist, Image Blob created:', letterURL);
+                            }).catch(error => console.error('Fetch error 2:', error));
+                        }
+                    })
+            });
+
+        
+
 
         let body = document.querySelector("body");
         document.getElementById("editaddress").addEventListener('click', function(a) {
@@ -229,7 +280,7 @@
             document.getElementById("env_div").addEventListener("click", function(ed){
                 envelope_overlay.innerHTML=`
                     <div id="paper_div" style="height: 80vh; width:auto; max-width: 95vw; top:50%; left:50%; transform: translate(-50%, -55%); position: fixed;">
-                        <img src="/static/cleanpaper.png" style="height: 80vh; width:auto; max-width: 95vw;">
+                        <img src="${letterURL}" style="height: 80vh; width:auto; max-width: 95vw;">
                     </div>
                     <div class="chat-container">
                         <textarea id="paper_textarea" class="styled-textarea" maxlength="250" placeholder="Type your letter here..."></textarea>

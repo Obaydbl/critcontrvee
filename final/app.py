@@ -7,7 +7,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime, timedelta
 from helpers import login_required, logout_required, generate_address, generate_image
 
-
 app = Flask(__name__)
 app.secret_key = 'aa0e62f3a9fe7935e90248f484755e2d4c7a917935090e42a67551dda2d1010f'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=90)
@@ -18,7 +17,9 @@ if __name__ == '__main__':
 
 MAX_LEVELS = 7
 
-db = SQL("mysql://root:ubBTIautGcTbQZskppUZasffRhVbAYvZ@junction.proxy.rlwy.net:47430/railway")
+DATABASE_URL = "mysql://root:ubBTIautGcTbQZskppUZasffRhVbAYvZ@junction.proxy.rlwy.net:47430/railway"
+
+db = SQL(DATABASE_URL)
 @app.after_request
 def add_cache_control(response):
     if request.path.startswith('/static/'):
@@ -38,7 +39,6 @@ def index():
 
 
 @app.route("/login", methods=["GET", "POST"])
-@login_required
 def login():
     """Log user in"""
 
@@ -199,9 +199,11 @@ def fetch_media(user_id, route):
     try:
         print(f"generated {route} for {username}")
         image = generate_image(route, address, username, recipient)
+
         print("done serverside")
         db.execute("UPDATE envelopes_modify SET modified = 0 WHERE user_id = ? AND route = ?;", user_id, route)
         return send_file(image, as_attachment=True, download_name=route+'png', mimetype='image/png')
+    
     except Exception as e:
         print(e)
         return abort(500)

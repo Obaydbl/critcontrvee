@@ -355,8 +355,8 @@ void cipher2(int height, int width, RGBTRIPLE image[height][width], char* messag
                         image[ch - j][cw + k].rgbtBlue = (uint8_t) (gsValue * 20/255.0  + image[ch - j][cw + k].rgbtBlue * (255 - gsValue)/255.0);
                     }
                     else {
-                        image[ch - j][cw + k].rgbtRed = (uint8_t) (gsValue * 20/255.0 + image[ch - j][cw + k].rgbtRed * (255 - gsValue)/255.0);
-                        image[ch - j][cw + k].rgbtGreen = (uint8_t) (gsValue * 150/255.0 + image[ch - j][cw + k].rgbtGreen * (255 - gsValue)/255.0);
+                        image[ch - j][cw + k].rgbtRed = (uint8_t) (gsValue * 150/255.0 + image[ch - j][cw + k].rgbtRed * (255 - gsValue)/255.0);
+                        image[ch - j][cw + k].rgbtGreen = (uint8_t) (gsValue * 20/255.0 + image[ch - j][cw + k].rgbtGreen * (255 - gsValue)/255.0);
                         image[ch - j][cw + k].rgbtBlue = (uint8_t) (gsValue * 20/255.0  + image[ch - j][cw + k].rgbtBlue * (255 - gsValue)/255.0);
                     }
                 }

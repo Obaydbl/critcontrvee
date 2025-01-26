@@ -99,6 +99,9 @@ def generate_image(route, address, username, recipient = None):
         case 'envOwn':
             hp = "-416"
             wp = "-380"
+        case 'letterOwn':
+            hp = "700"
+            wp = "-300"
         case _:
             raise ValueError("Invalid image, accessing invalid route or image is not yet registered")
     if route == 'envOwn':
@@ -106,6 +109,9 @@ def generate_image(route, address, username, recipient = None):
             imageIO = io.BytesIO(subprocess.run(['./image2', route + ".bmp", "stdout", hp, wp, username, address['street'], address['city'] + ", " + address['zip'], address['country'], recipient['name'], recipient['street'], recipient['city'] + ", " + recipient['zip'], recipient['country']], cwd='image-write/Ee/', capture_output=True).stdout)
         else:
             imageIO = io.BytesIO(subprocess.run(['./image2', route + ".bmp", "stdout", hp, wp, username, address['street'], address['city'] + ", " + address['zip'], address['country']], cwd='image-write/Ee/', capture_output=True).stdout)
+    elif route == 'letterOwn':
+        imageIO = io.BytesIO(subprocess.run(['./signature', route + ".bmp", "stdout", hp, wp, username], cwd='image-write/Ee/', capture_output=True).stdout)
+
     else:
         imageIO = io.BytesIO(subprocess.run(['./image', route + ".bmp", "stdout", hp, wp, username, address['street'], address['city'] + ", " + address['zip'], address['country']], cwd='image-write/Ee/', capture_output=True).stdout)
     print("there")
@@ -113,7 +119,8 @@ def generate_image(route, address, username, recipient = None):
     image = Image.open(imageIO)
     imageIO = io.BytesIO()
     print("converting image")
-    image.save(imageIO, "PNG", optimize=True, quality=85)
+    image.save(imageIO, "PNG", optimize=True, quality=70)
+
     print("converted image")
 
     print(f"saved image, size is {len(imageIO.getbuffer())}")

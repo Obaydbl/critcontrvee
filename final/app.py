@@ -39,6 +39,7 @@ def index():
 
 
 @app.route("/login", methods=["GET", "POST"])
+@logout_required
 def login():
     """Log user in"""
 
@@ -123,7 +124,7 @@ def register():
         except ValueError:
             flash('Username already exists')
             return redirect('/register')
-        return render_template("done.html")
+        return redirect('/login')
     else:
         return render_template("register.html")
 

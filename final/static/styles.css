@@ -515,7 +515,7 @@ input[type=number] {
 
     /* Positioning */
     position: fixed;
-    bottom: 4%; /* Margin from the bottom of the viewport */
+    bottom: 2%; /* Margin from the bottom of the viewport */
     left: 50%; /* Center horizontally relative to the viewport */
     transform: translateX(-50%); /* Offset by half the width for true centering */
 

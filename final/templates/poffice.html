@@ -67,8 +67,8 @@
         window.onload = () => {
             const loading_overlay = document.getElementById('loading_overlay');
             function all_loaded() {
-                if (envelopeURL == "") {
-                    return true;
+                if (envelopeURL == "" || letterURL == "") {
+                    return false;
                 }
                 return true;
             }
@@ -279,11 +279,11 @@
             body.appendChild(envelope_overlay);
             document.getElementById("env_div").addEventListener("click", function(ed){
                 envelope_overlay.innerHTML=`
-                    <div id="paper_div" style="height: 80vh; width:auto; max-width: 95vw; top:50%; left:50%; transform: translate(-50%, -55%); position: fixed;">
+                    <div id="paper_div" style="height: 80vh; width:auto; max-width: 95vw; top:47%; left:50%; transform: translate(-50%, -55%); position: fixed;">
                         <img src="${letterURL}" style="height: 80vh; width:auto; max-width: 95vw;">
                     </div>
                     <div class="chat-container">
-                        <textarea id="paper_textarea" class="styled-textarea" maxlength="250" placeholder="Type your letter here..."></textarea>
+                        <textarea id="paper_textarea" class="styled-textarea" maxlength="300" placeholder="Type your letter here..."></textarea>
                         <button id="open_attachment">Add attachment</button>
                         <button id="save_letter">Save</button>
                     </div>
@@ -315,7 +315,7 @@
                     envelope_overlay.remove();
                 });
                 setInterval(function(){
-                    paper_text.textContent = paper_textarea.value;
+                    paper_text.innerHTML = paper_textarea.value.replace(/\n/g, '<br>'); 
                 }, 100);
             });
         });
